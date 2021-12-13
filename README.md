@@ -1,4 +1,4 @@
-# vue-grid-layout-echarts
+# vue-grid-layout-echarts-demo
 
 ## Project setup
 ```
