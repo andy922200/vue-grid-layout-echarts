@@ -1,5 +1,9 @@
 # vue-grid-layout-echarts-demo
 
+<div style="width:100%">
+  <img src="./vue-grid-layout-echarts.gif" width="300" height="200" style="display:block;margin: 0 auto;">
+</div>
+
 ## Project setup
 ```
 npm install
