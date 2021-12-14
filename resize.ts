@@ -1,4 +1,4 @@
-interface eleCustom {
+interface EleCustom {
   __resizeTrigger__: undefined | any,
   __z_resizeListeners: undefined | any[]
 }
@@ -10,16 +10,13 @@ interface DocumentExtend {
 
 const EleResize = {
   _handleResize: function (e: Event) {
-    const ele = {
-      ...e.target || e.srcElement,
-      __resizeTrigger__: undefined as undefined | Record<string, any>,
-      __z_resizeListeners: undefined as undefined | any[]
-    }
-    const trigger = ele.__resizeTrigger__
+    const ele = e.target || e.srcElement as Event & EleCustom['__resizeTrigger__']
+    const trigger = ele?.__resizeTrigger__
     if (trigger) {
       const handlers = trigger.__z_resizeListeners
       if (handlers) {
-        for (let i = 0; i < handlers.length; i++) {
+        const size = handlers.length
+        for (let i = 0; i < size; i++) {
           const h = handlers[i]
           const handler = h.handler
           const context = h.context
@@ -28,7 +25,7 @@ const EleResize = {
       }
     }
   },
-  _removeHandler: function (ele: eleCustom & HTMLElement, handler: any, context: any) {
+  _removeHandler: function (ele: EleCustom & HTMLElement, handler: any, context: any) {
     const handlers = ele.__z_resizeListeners
     if (handlers) {
       for (let i = 0; i < handlers.length; i++) {
@@ -40,7 +37,7 @@ const EleResize = {
       }
     }
   },
-  _createResizeTrigger: function (ele: eleCustom & HTMLElement) {
+  _createResizeTrigger: function (ele: EleCustom & HTMLElement) {
     const obj = document.createElement('object')
     obj.setAttribute('style',
       'display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden;opacity: 0; pointer-events: none; z-index: -1;')
@@ -61,7 +58,7 @@ const EleResize = {
 
 /*@ts-ignore*/
 if (document.attachEvent) { // ie9-10
-  EleResize.on = function (ele: eleCustom & HTMLElement & DocumentExtend, handler: any, context: any) {
+  EleResize.on = function (ele: EleCustom & HTMLElement & DocumentExtend, handler: any, context: any) {
     let handlers = ele.__z_resizeListeners
     if (!handlers) {
       handlers = []
@@ -74,7 +71,7 @@ if (document.attachEvent) { // ie9-10
       context: context
     })
   }
-  EleResize.off = function (ele: eleCustom & HTMLElement & DocumentExtend, handler: any, context: any) {
+  EleResize.off = function (ele: EleCustom & HTMLElement & DocumentExtend, handler: any, context: any) {
     let handlers = ele.__z_resizeListeners
     if (handlers) {
       EleResize._removeHandler(ele, handler, context)
@@ -85,7 +82,7 @@ if (document.attachEvent) { // ie9-10
     }
   }
 } else {
-  EleResize.on = function (ele: eleCustom & HTMLElement, handler: any, context: any) {
+  EleResize.on = function (ele: EleCustom & HTMLElement, handler: any, context: any) {
     let handlers = ele.__z_resizeListeners
     if (!handlers) {
       handlers = []
@@ -103,7 +100,7 @@ if (document.attachEvent) { // ie9-10
       context: context
     })
   }
-  EleResize.off = function (ele: eleCustom & HTMLElement, handler: any, context: any) {
+  EleResize.off = function (ele: EleCustom & HTMLElement, handler: any, context: any) {
     let handlers = ele.__z_resizeListeners
     if (handlers) {
       EleResize._removeHandler(ele, handler, context)

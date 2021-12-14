@@ -12,6 +12,7 @@
         :responsive="responsive"
         :vertical-compact="true"
         :use-css-transforms="true"
+        @breakpoint-changed="breakpointChangedEvent"
       >
         <grid-item
           v-for="item in layout"
@@ -189,7 +190,15 @@ export default {
     }, 1000),
     resizedEvent: debounce(function(i, newH, newW, newHPx, newWPx){
         console.log("RESIZED i=" + i + ", H=" + newH + ", W=" + newW + ", H(px)=" + newHPx + ", W(px)=" + newWPx);
-    }, 1000)
+    }, 1000),
+    breakpointChangedEvent: function (newBreakpoint, newLayout) {
+        /* disable editMode while 'vue-grid-layout' breakpoint changes */
+        newLayout.forEach(item => {
+            if (this.layout.findIndex(oriItem => oriItem.i === item.i) > -1) {
+                item.editMode = false
+            }
+        })
+    }
   }
 };
 </script>

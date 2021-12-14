@@ -59,11 +59,9 @@ export default {
   methods:{
     getChartDateRange: function(eChartInstance){
       const option = eChartInstance.getOption().dataZoom[0]
-      let fullStartTimestamp = undefined
-      let fullEndTimestamp = undefined
       const m = (option.endValue - option.startValue) / (option.end - option.start)
-      fullStartTimestamp = m * (0 - option.start) + option.startValue,
-      fullEndTimestamp = m * (100 - option.start) + option.startValue;
+      const fullStartTimestamp = m * (0 - option.start) + option.startValue
+      const fullEndTimestamp = m * (100 - option.start) + option.startValue
       const result = {
         fullStart: 0,
         fullEnd: 100,
