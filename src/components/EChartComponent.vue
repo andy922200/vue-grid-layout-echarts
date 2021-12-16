@@ -45,13 +45,17 @@ export default {
           this.chart.resize()
         })
         if(this.$props.hasDataZoom){
-          this.chart.on('datazoom', this.getChartDateRange(this.chart))
+          this.chart.on('dataZoom', () => {
+            this.getChartDateRange(this.chart)
+          })
         }
     }, 0)
   },
   destroyed(){
     const targetResizeDiv = document.querySelector(`#chart-${this.$props.uniqueId}`)
-    EleResize.off(targetResizeDiv)
+    if(targetResizeDiv){
+      EleResize.off(targetResizeDiv)
+    }
     if(this.chart){
       this.chart.dispose()
     }
@@ -76,7 +80,11 @@ export default {
         zoomEndTimestamp: option.endValue,
         zoomEndTime: new Date(option.endValue).toISOString().slice(),
       }
-      return result
+      this.$emit('dataZoomTimeRange',{
+          uniqueId: this.$props.uniqueId,
+          instance: eChartInstance,
+          ...result
+      })
     }
   }
 };
