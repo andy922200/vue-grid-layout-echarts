@@ -29,6 +29,14 @@ export default {
       type: Boolean,
       required: false,
       default: false
+    },
+    myFunctionKeys:{
+      type: Array,
+      required: false
+    },
+    myTestFunctions:{
+      type: Function,
+      required: false
     }
   },
   data(){
@@ -40,7 +48,31 @@ export default {
     setTimeout(()=>{
         const targetResizeDiv = document.querySelector(`#chart-${this.$props.uniqueId}`)
         this.chart = this.$echarts.init(targetResizeDiv)
-        this.chart.setOption(this.$props.echartOption)
+        const finalOption = {
+          ...this.$props.echartOption
+        }
+
+        if(finalOption?.toolbox?.feature){
+          const selectedMyFunctions = {}
+
+          for(const [key, values] of Object.entries(this.$props.myTestFunctions())){
+            this.$props.myFunctionKeys.forEach(item=>{
+              if(item.param === key){
+                selectedMyFunctions[key] = {
+                  ...item,
+                  onclick: values
+                }
+              }
+            })
+          }
+
+          finalOption.toolbox.feature = {
+            ...finalOption.toolbox.feature,
+            ...selectedMyFunctions
+          }
+        }
+
+        this.chart.setOption(finalOption)
         EleResize.on(targetResizeDiv, () => {
           this.chart.resize()
         })
