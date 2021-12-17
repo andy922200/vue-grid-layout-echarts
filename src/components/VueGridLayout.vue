@@ -153,8 +153,8 @@ export default {
           dataZoom: [
             {
               type: 'slider',
-              start: 25,
-              end: 50,
+              start: 0,
+              end: 100,
               showDetail: false
             }
           ],
@@ -278,6 +278,28 @@ export default {
     },
     getDataZoomTimeRange(data){
       console.log('data', data)
+      const instance = data.instance
+      const oriOption =  instance.getOption();
+      const fetchOption = function(){
+        let base = +new Date(2016, 0, 1);
+        let oneDay = 24 * 3600 * 1000;
+        let data = [
+          [base, Math.random() * 300]
+        ]
+        for (let i = 1; i < 1000; i++) {
+          let now = new Date((base += oneDay));
+          data.push([+now, Math.round((Math.random() - 0.5) * 20 + data[i - 1][1])]);
+        }
+        return data
+      }();
+      const uniqueData = [ ...oriOption.series[0].data];
+      [ ...fetchOption, ...oriOption.series[0].data].forEach(item=>{
+        if(uniqueData.findIndex(i=>i[0] === item[0]) === -1){
+          uniqueData.push(item)
+        }
+      })
+      oriOption.series[0].data = uniqueData.sort((a,b)=>a[0]-b[0] > -1 ? 1 : -1)
+      instance.setOption(oriOption);
     },
     myTestFunctions(){
       const myTest = function myTest(){
