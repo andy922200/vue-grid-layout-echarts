@@ -13,6 +13,7 @@
           :responsive="responsive"
           :vertical-compact="true"
           :use-css-transforms="true"
+          @layout-updated="layoutUpdatedEvent"
           @breakpoint-changed="breakpointChangedEvent"
         >
           <grid-item
@@ -27,7 +28,6 @@
             :minW="4"
             :minH="2"
             @move="movedEvent"
-            @resize="resizedEvent"
             drag-allow-from=".vue-draggable-handle"
             drag-ignore-from=".no-drag"
             :class="item.editMode ? 'activate-resizable-handle' : 'deactivate-resizable-handle'"
@@ -63,6 +63,7 @@
 import { GridLayout, GridItem } from "vue-grid-layout";
 import { debounce } from 'lodash-es'
 import EChartComponent from "./EChartComponent.vue"
+import EleResize from '../../resize'
 
 export default {
   components: {
@@ -72,20 +73,18 @@ export default {
   },
   data() {
     return {
+      defaultLayout: [],
       layout: [],
       draggable: true,
       resizable: true,
       responsive: true,
-      index: 0,
+      vueGridLayoutDivWidth: 0,
     };
   },
   mounted(){
-    this.layout = [
-      { 
-        x: 0, 
-        y: 0, 
-        w: 4, 
-        h: 3, 
+    const dataFromServer = [
+      {
+        "x":0, "y":0, "w":4, "h":3,
         i: "A",
         editMode: false,
         hasDataZoom: false,
@@ -108,11 +107,8 @@ export default {
           ]
         }
       },
-      { 
-        x: 4, 
-        y: 0, 
-        w: 4, 
-        h: 3, 
+      {
+        "x":0, "y":3, "w":4, "h":4,
         i: "B",
         editMode: false,
         hasDataZoom: true, 
@@ -185,31 +181,99 @@ export default {
           ]
         }
       },
-      { 
-        x: 8, 
-        y: 0, 
-        w: 4, 
-        h: 3, 
+      {
+        "x":0, "y":7, "w":4, "h":3,
         i: "C",
         editMode: false,
         myFunctionKeys: [],
         option:{}
       }
     ]
+
+    this.defaultLayout = dataFromServer.map((item)=>{
+      const obj = {
+        x: item.x,
+        y: item.y,
+        w: item.w,
+        h: item.h,
+        i: item.i
+      }
+      return obj
+    })
+
+    this.layout = dataFromServer.map((item, index)=>{
+      const newObj = {
+        ...item,
+        ...dataFromServer[index]
+      }
+      return newObj
+    })
+
+    /*detect vue-grid-layout width*/
+    setTimeout(()=>{
+      if(document.querySelector('.vue-grid-layout')){
+        this.vueGridLayoutDivWidth = document.querySelector('.vue-grid-layout').clientWidth
+        EleResize.on(document.querySelector('.vue-grid-layout'), (e) => {
+          this.vueGridLayoutDivWidth = e.target.innerWidth
+        })
+      }
+    }, 0)
+  },
+  computed:{
+    currentBreakPoint(){
+      return this.vueGridLayoutDivWidth >= 1200
+        ? 'lg'
+        : this.vueGridLayoutDivWidth >= 996
+          ? 'md'
+          : this.vueGridLayoutDivWidth >= 768
+            ? 'sm'
+            : this.vueGridLayoutDivWidth >= 480
+              ? 'xs'
+              : 'xxs'
+    }
   },
   methods:{
     movedEvent: debounce(function(i, newX, newY){
-        console.log("MOVED i=" + i + ", X=" + newX + ", Y=" + newY);
+        this.defaultLayout.forEach((item)=>{
+          if(item.i === i){
+            item.x = newX
+            item.y = newY
+          }
+        })
     }, 1000),
-    resizedEvent: debounce(function(i, newH, newW, newHPx, newWPx){
-        console.log("RESIZED i=" + i + ", H=" + newH + ", W=" + newW + ", H(px)=" + newHPx + ", W(px)=" + newWPx);
+    layoutUpdatedEvent: debounce(function(newLayout){
+      this.defaultLayout = newLayout.map((item)=>{
+        const obj = {
+          x: item.x,
+          y: item.y,
+          w: item.w,
+          h: item.h,
+          i: item.i
+        }
+        return obj
+      })
     }, 1000),
     breakpointChangedEvent: function (newBreakpoint, newLayout) {
+        console.log('newBreakpoint',newBreakpoint)
+        console.log('newLayout', newLayout)
         /* disable editMode while 'vue-grid-layout' breakpoint changes */
         newLayout.forEach(item => {
-            if (this.layout.findIndex(oriItem => oriItem.i === item.i) > -1) {
-                item.editMode = false
+          this.layout.forEach(oriItem=>{
+            if(oriItem.i === item.i){
+              oriItem.editMode = false
             }
+          })
+        })
+
+        this.defaultLayout = newLayout.map((item)=>{
+          const obj = {
+            x: item.x,
+            y: item.y,
+            w: item.w,
+            h: item.h,
+            i: item.i
+          }
+          return obj
         })
     },
     getDataZoomTimeRange(data){
